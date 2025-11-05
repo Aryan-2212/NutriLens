@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Logo } from "@/components/Logo";
 import { NutritionRing } from "@/components/NutritionRing";
 import { ProteinRecommendations } from "@/components/ProteinRecommendations";
+import { WeeklyProgress } from "@/components/WeeklyProgress";
 import { Plus, Camera, Edit, LogOut, Utensils, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
@@ -58,6 +59,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [todaysMeals, setTodaysMeals] = useState<Meal[]>([]);
+  const [weeklyMeals, setWeeklyMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -117,6 +119,22 @@ const Dashboard = () => {
       if (mealsError) throw mealsError;
 
       setTodaysMeals(mealsData || []);
+
+      // Load weekly meals (past 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+      sevenDaysAgo.setHours(0, 0, 0, 0);
+
+      const { data: weeklyData, error: weeklyError } = await supabase
+        .from("meals")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("logged_at", sevenDaysAgo.toISOString())
+        .order("logged_at", { ascending: false });
+
+      if (weeklyError) throw weeklyError;
+
+      setWeeklyMeals(weeklyData || []);
     } catch (error: any) {
       toast.error(error.message || "Failed to load data");
     } finally {
@@ -414,6 +432,9 @@ const Dashboard = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Weekly Progress */}
+        <WeeklyProgress meals={weeklyMeals} />
 
         {/* Protein Recommendations */}
         <ProteinRecommendations weight={profile?.weight} />
