@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
 import { NutritionRing } from "@/components/NutritionRing";
+import { ProteinRecommendations } from "@/components/ProteinRecommendations";
 import { Plus, Camera, Edit, LogOut, Utensils } from "lucide-react";
 import { toast } from "sonner";
 
 interface Profile {
   daily_calorie_goal: number;
+  weight?: number;
 }
 
 interface Meal {
@@ -23,6 +25,7 @@ interface Meal {
   fiber: number;
   meal_type: string;
   logged_at: string;
+  image_url?: string;
 }
 
 const Dashboard = () => {
@@ -206,27 +209,40 @@ const Dashboard = () => {
                 {todaysMeals.map((meal) => (
                   <div
                     key={meal.id}
-                    className="flex justify-between items-start p-4 rounded-lg border bg-card hover:shadow-soft transition-shadow"
+                    className="flex justify-between items-center gap-4 p-4 rounded-lg border bg-card hover:shadow-soft transition-shadow"
                   >
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-lg">{meal.name}</h3>
-                      <p className="text-sm text-muted-foreground capitalize">{meal.meal_type}</p>
-                      <div className="flex flex-wrap gap-4 mt-2 text-sm">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        <span className="capitalize">{meal.meal_type}</span>
+                        {" • "}
+                        <span className="text-xs">
+                          {new Date(meal.logged_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </p>
+                      <div className="flex flex-wrap gap-3 text-sm">
                         <span className="text-primary font-medium">{Math.round(meal.calories)} cal</span>
-                        <span style={{ color: "hsl(var(--nutrition-protein))" }}>Protein: {Math.round(meal.protein)}g</span>
-                        <span style={{ color: "hsl(var(--nutrition-carbs))" }}>Carbs: {Math.round(meal.carbs)}g</span>
-                        <span style={{ color: "hsl(var(--nutrition-fat))" }}>Fats: {Math.round(meal.fat)}g</span>
+                        <span className="text-muted-foreground">• {Math.round(meal.protein)}g protein</span>
+                        <span className="text-muted-foreground">• {Math.round(meal.carbs)}g carbs</span>
+                        <span className="text-muted-foreground">• {Math.round(meal.fat)}g fat</span>
                       </div>
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(meal.logged_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </span>
+                    {meal.image_url && (
+                      <img
+                        src={meal.image_url}
+                        alt={meal.name}
+                        className="w-20 h-20 rounded-lg object-cover flex-shrink-0 shadow-soft"
+                      />
+                    )}
                   </div>
                 ))}
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Protein Recommendations */}
+        <ProteinRecommendations weight={profile?.weight} />
 
         {/* Recommendations */}
         {profile && totals.calories < profile.daily_calorie_goal * 0.7 && (
