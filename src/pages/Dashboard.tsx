@@ -4,10 +4,30 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Logo } from "@/components/Logo";
 import { NutritionRing } from "@/components/NutritionRing";
 import { ProteinRecommendations } from "@/components/ProteinRecommendations";
-import { Plus, Camera, Edit, LogOut, Utensils } from "lucide-react";
+import { Plus, Camera, Edit, LogOut, Utensils, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 interface Profile {
@@ -34,6 +54,19 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [todaysMeals, setTodaysMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    calories: "",
+    protein: "",
+    carbs: "",
+    fat: "",
+    fiber: "",
+    meal_type: "",
+  });
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -100,6 +133,77 @@ const Dashboard = () => {
   const recommendedProtein = profile ? Math.round(profile.daily_calorie_goal * 0.3 / 4) : 150;
   const recommendedCarbs = profile ? Math.round(profile.daily_calorie_goal * 0.4 / 4) : 200;
   const recommendedFat = profile ? Math.round(profile.daily_calorie_goal * 0.3 / 9) : 60;
+
+  const handleDeleteClick = (meal: Meal) => {
+    setSelectedMeal(meal);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleEditClick = (meal: Meal) => {
+    setSelectedMeal(meal);
+    setEditFormData({
+      name: meal.name,
+      calories: meal.calories.toString(),
+      protein: meal.protein.toString(),
+      carbs: meal.carbs.toString(),
+      fat: meal.fat.toString(),
+      fiber: meal.fiber.toString(),
+      meal_type: meal.meal_type,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedMeal) return;
+
+    try {
+      const { error } = await supabase
+        .from("meals")
+        .delete()
+        .eq("id", selectedMeal.id);
+
+      if (error) throw error;
+
+      toast.success("Meal deleted successfully!");
+      loadData(); // Refresh the meals list
+      setDeleteDialogOpen(false);
+      setSelectedMeal(null);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete meal");
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedMeal) return;
+
+    setUpdating(true);
+
+    try {
+      const { error } = await supabase
+        .from("meals")
+        .update({
+          name: editFormData.name,
+          calories: parseFloat(editFormData.calories),
+          protein: parseFloat(editFormData.protein) || 0,
+          carbs: parseFloat(editFormData.carbs) || 0,
+          fat: parseFloat(editFormData.fat) || 0,
+          fiber: parseFloat(editFormData.fiber) || 0,
+          meal_type: editFormData.meal_type,
+        })
+        .eq("id", selectedMeal.id);
+
+      if (error) throw error;
+
+      toast.success("Meal updated successfully!");
+      loadData(); // Refresh the meals list
+      setEditDialogOpen(false);
+      setSelectedMeal(null);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update meal");
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -227,13 +331,33 @@ const Dashboard = () => {
                         <span className="text-muted-foreground">• {Math.round(meal.fat)}g fat</span>
                       </div>
                     </div>
-                    {meal.image_url && (
-                      <img
-                        src={meal.image_url}
-                        alt={meal.name}
-                        className="w-20 h-20 rounded-lg object-cover flex-shrink-0 shadow-soft"
-                      />
-                    )}
+                    <div className="flex items-center gap-2">
+                      {meal.image_url && (
+                        <img
+                          src={meal.image_url}
+                          alt={meal.name}
+                          className="w-20 h-20 rounded-lg object-cover shadow-soft"
+                        />
+                      )}
+                      <div className="flex flex-col gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditClick(meal)}
+                          className="h-8 w-8"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteClick(meal)}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -244,6 +368,135 @@ const Dashboard = () => {
         {/* Protein Recommendations */}
         <ProteinRecommendations weight={profile?.weight} />
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Meal</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{selectedMeal?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Meal Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Meal</DialogTitle>
+            <DialogDescription>Update the details of your meal</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Meal Name</Label>
+              <Input
+                id="edit-name"
+                value={editFormData.name}
+                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-meal-type">Meal Type</Label>
+              <Select
+                value={editFormData.meal_type}
+                onValueChange={(value) => setEditFormData({ ...editFormData, meal_type: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select meal type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="breakfast">Breakfast</SelectItem>
+                  <SelectItem value="lunch">Lunch</SelectItem>
+                  <SelectItem value="dinner">Dinner</SelectItem>
+                  <SelectItem value="snack">Snack</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-calories">Calories</Label>
+                <Input
+                  id="edit-calories"
+                  type="number"
+                  value={editFormData.calories}
+                  onChange={(e) => setEditFormData({ ...editFormData, calories: e.target.value })}
+                  required
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-protein">Protein (g)</Label>
+                <Input
+                  id="edit-protein"
+                  type="number"
+                  value={editFormData.protein}
+                  onChange={(e) => setEditFormData({ ...editFormData, protein: e.target.value })}
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-carbs">Carbs (g)</Label>
+                <Input
+                  id="edit-carbs"
+                  type="number"
+                  value={editFormData.carbs}
+                  onChange={(e) => setEditFormData({ ...editFormData, carbs: e.target.value })}
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-fat">Fat (g)</Label>
+                <Input
+                  id="edit-fat"
+                  type="number"
+                  value={editFormData.fat}
+                  onChange={(e) => setEditFormData({ ...editFormData, fat: e.target.value })}
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-fiber">Fiber (g)</Label>
+              <Input
+                id="edit-fiber"
+                type="number"
+                value={editFormData.fiber}
+                onChange={(e) => setEditFormData({ ...editFormData, fiber: e.target.value })}
+                min="0"
+                step="0.1"
+              />
+            </div>
+
+            <div className="flex gap-2 justify-end pt-4">
+              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdate} disabled={updating}>
+                {updating ? "Updating..." : "Update Meal"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
