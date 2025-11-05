@@ -28,6 +28,7 @@ import { Logo } from "@/components/Logo";
 import { NutritionRing } from "@/components/NutritionRing";
 import { ProteinRecommendations } from "@/components/ProteinRecommendations";
 import { WeeklyProgress } from "@/components/WeeklyProgress";
+import { MealHistory } from "@/components/MealHistory";
 import { Plus, Camera, Edit, LogOut, Utensils, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
@@ -435,6 +436,9 @@ const Dashboard = () => {
 
         {/* Weekly Progress */}
         <WeeklyProgress meals={weeklyMeals} />
+
+        {/* Meal History */}
+        <MealHistory meals={weeklyMeals} />
 
         {/* Protein Recommendations */}
         <ProteinRecommendations weight={profile?.weight} />
