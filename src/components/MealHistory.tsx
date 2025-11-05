@@ -82,7 +82,7 @@ export const MealHistory = ({ meals, isUpdating = false }: MealHistoryProps) => 
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
-            <p>No meal history available yet. Start logging meals to build your history!</p>
+            <p>No previous days yet. Your meal history will appear here starting tomorrow!</p>
           </div>
         </CardContent>
       </Card>
