@@ -33,6 +33,10 @@ import { toast } from "sonner";
 interface Profile {
   daily_calorie_goal: number;
   weight?: number;
+  height?: number;
+  age?: number;
+  gender?: string;
+  activity_level?: string;
 }
 
 interface Meal {
@@ -130,9 +134,44 @@ const Dashboard = () => {
     { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
   );
 
-  const recommendedProtein = profile ? Math.round(profile.daily_calorie_goal * 0.3 / 4) : 150;
-  const recommendedCarbs = profile ? Math.round(profile.daily_calorie_goal * 0.4 / 4) : 200;
-  const recommendedFat = profile ? Math.round(profile.daily_calorie_goal * 0.3 / 9) : 60;
+  // Calculate macro targets based on user profile
+  const calculateMacroTargets = () => {
+    if (!profile || !profile.weight) {
+      // Default targets if no profile data
+      return {
+        protein: 150,
+        carbs: 200,
+        fat: 60,
+      };
+    }
+
+    const weight = profile.weight;
+    const activityLevel = profile.activity_level || "moderately_active";
+
+    // Protein: Based on activity level (g per kg body weight)
+    const proteinMultipliers: Record<string, number> = {
+      sedentary: 0.8,
+      lightly_active: 1.2,
+      moderately_active: 1.6,
+      very_active: 2.0,
+      extremely_active: 2.2,
+    };
+    const proteinPerKg = proteinMultipliers[activityLevel] || 1.6;
+    const protein = Math.round(weight * proteinPerKg);
+
+    // Fat: 25-30% of total calories (using 0.9-1.0g per kg body weight)
+    const fat = Math.round(weight * 1.0);
+
+    // Carbs: Remaining calories after protein and fat
+    const proteinCals = protein * 4;
+    const fatCals = fat * 9;
+    const remainingCals = profile.daily_calorie_goal - proteinCals - fatCals;
+    const carbs = Math.round(remainingCals / 4);
+
+    return { protein, carbs, fat };
+  };
+
+  const { protein: recommendedProtein, carbs: recommendedCarbs, fat: recommendedFat } = calculateMacroTargets();
 
   const handleDeleteClick = (meal: Meal) => {
     setSelectedMeal(meal);
