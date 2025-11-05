@@ -22,6 +22,7 @@ interface MealHistoryProps {
 
 export const MealHistory = ({ meals }: MealHistoryProps) => {
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+  const [visibleDays, setVisibleDays] = useState(7);
 
   // Group meals by date
   const mealsByDate = meals.reduce((acc, meal) => {
@@ -96,7 +97,7 @@ export const MealHistory = ({ meals }: MealHistoryProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {historyDates.slice(0, 7).map((date) => {
+        {historyDates.slice(0, visibleDays).map((date) => {
           const dayMeals = mealsByDate[date];
           const totals = calculateDailyTotals(dayMeals);
           const isExpanded = expandedDates.has(date);
@@ -168,6 +169,18 @@ export const MealHistory = ({ meals }: MealHistoryProps) => {
             </div>
           );
         })}
+        
+        {historyDates.length > visibleDays && (
+          <div className="pt-2">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setVisibleDays(prev => prev + 7)}
+            >
+              Load More History
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

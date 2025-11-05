@@ -121,16 +121,16 @@ const Dashboard = () => {
 
       setTodaysMeals(mealsData || []);
 
-      // Load weekly meals (past 7 days)
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-      sevenDaysAgo.setHours(0, 0, 0, 0);
+      // Load weekly meals (past 30 days for history)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      thirtyDaysAgo.setHours(0, 0, 0, 0);
 
       const { data: weeklyData, error: weeklyError } = await supabase
         .from("meals")
         .select("*")
         .eq("user_id", user.id)
-        .gte("logged_at", sevenDaysAgo.toISOString())
+        .gte("logged_at", thirtyDaysAgo.toISOString())
         .order("logged_at", { ascending: false });
 
       if (weeklyError) throw weeklyError;
