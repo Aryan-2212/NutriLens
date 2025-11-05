@@ -213,9 +213,9 @@ const Dashboard = () => {
                       <p className="text-sm text-muted-foreground capitalize">{meal.meal_type}</p>
                       <div className="flex flex-wrap gap-4 mt-2 text-sm">
                         <span className="text-primary font-medium">{Math.round(meal.calories)} cal</span>
-                        <span style={{ color: "hsl(var(--nutrition-protein))" }}>P: {Math.round(meal.protein)}g</span>
-                        <span style={{ color: "hsl(var(--nutrition-carbs))" }}>C: {Math.round(meal.carbs)}g</span>
-                        <span style={{ color: "hsl(var(--nutrition-fat))" }}>F: {Math.round(meal.fat)}g</span>
+                        <span style={{ color: "hsl(var(--nutrition-protein))" }}>Protein: {Math.round(meal.protein)}g</span>
+                        <span style={{ color: "hsl(var(--nutrition-carbs))" }}>Carbs: {Math.round(meal.carbs)}g</span>
+                        <span style={{ color: "hsl(var(--nutrition-fat))" }}>Fats: {Math.round(meal.fat)}g</span>
                       </div>
                     </div>
                     <span className="text-xs text-muted-foreground">
