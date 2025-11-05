@@ -28,11 +28,15 @@ export const NutritionRing = ({ value, max, label, color, size = "md" }: Nutriti
   return (
     <div className="flex flex-col items-center gap-2">
       <div className={`${sizeClasses[size]} relative`}>
-        <svg className="transform -rotate-90" viewBox="0 0 100 100">
+        <svg 
+          className="transform -rotate-90 overflow-visible" 
+          viewBox="0 0 120 120"
+          style={{ width: '100%', height: '100%' }}
+        >
           {/* Background circle */}
           <circle
-            cx="50"
-            cy="50"
+            cx="60"
+            cy="60"
             r={radius}
             fill="none"
             stroke="hsl(var(--muted))"
@@ -40,8 +44,8 @@ export const NutritionRing = ({ value, max, label, color, size = "md" }: Nutriti
           />
           {/* Progress circle */}
           <circle
-            cx="50"
-            cy="50"
+            cx="60"
+            cy="60"
             r={radius}
             fill="none"
             stroke={color}
