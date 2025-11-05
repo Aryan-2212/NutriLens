@@ -65,6 +65,7 @@ const Dashboard = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [editFormData, setEditFormData] = useState({
     name: "",
     calories: "",
@@ -97,7 +98,24 @@ const Dashboard = () => {
         },
         (payload) => {
           console.log('Meal change detected:', payload);
-          loadData(); // Refresh data on any change
+          
+          // Show visual indicator
+          setIsUpdating(true);
+          
+          // Show toast notification
+          if (payload.eventType === 'INSERT') {
+            toast.success('Meal added - data updated!');
+          } else if (payload.eventType === 'UPDATE') {
+            toast.info('Meal updated - refreshing data!');
+          } else if (payload.eventType === 'DELETE') {
+            toast.info('Meal deleted - data updated!');
+          }
+          
+          // Refresh data
+          loadData();
+          
+          // Remove visual indicator after animation
+          setTimeout(() => setIsUpdating(false), 1000);
         }
       )
       .subscribe();
@@ -326,7 +344,7 @@ const Dashboard = () => {
         )}
 
         {/* Today's Summary */}
-        <Card className="shadow-strong">
+        <Card className={`shadow-strong transition-all duration-500 ${isUpdating ? 'animate-pulse ring-2 ring-primary/50' : ''}`}>
           <CardHeader>
             <CardTitle>Today's Nutrition</CardTitle>
             <CardDescription>Track your daily intake and stay on target</CardDescription>
@@ -384,7 +402,7 @@ const Dashboard = () => {
         </div>
 
         {/* Today's Meals */}
-        <Card className="shadow-strong">
+        <Card className={`shadow-strong transition-all duration-500 ${isUpdating ? 'animate-pulse ring-2 ring-primary/50' : ''}`}>
           <CardHeader>
             <CardTitle>Today's Meals</CardTitle>
             <CardDescription>
@@ -457,10 +475,10 @@ const Dashboard = () => {
         </Card>
 
         {/* Weekly Progress */}
-        <WeeklyProgress meals={weeklyMeals} />
+        <WeeklyProgress meals={weeklyMeals} isUpdating={isUpdating} />
 
         {/* Meal History */}
-        <MealHistory meals={weeklyMeals} />
+        <MealHistory meals={weeklyMeals} isUpdating={isUpdating} />
 
         {/* Protein Recommendations */}
         <ProteinRecommendations weight={profile?.weight} />

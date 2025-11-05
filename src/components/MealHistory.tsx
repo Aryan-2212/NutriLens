@@ -18,9 +18,10 @@ interface Meal {
 
 interface MealHistoryProps {
   meals: Meal[];
+  isUpdating?: boolean;
 }
 
-export const MealHistory = ({ meals }: MealHistoryProps) => {
+export const MealHistory = ({ meals, isUpdating = false }: MealHistoryProps) => {
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   const [visibleDays, setVisibleDays] = useState(7);
 
@@ -72,7 +73,7 @@ export const MealHistory = ({ meals }: MealHistoryProps) => {
 
   if (historyDates.length === 0) {
     return (
-      <Card className="bg-card/50 backdrop-blur-sm border-primary/10">
+      <Card className={`bg-card/50 backdrop-blur-sm border-primary/10 transition-all duration-500 ${isUpdating ? 'animate-pulse ring-2 ring-primary/50' : ''}`}>
         <CardHeader>
           <CardTitle className="text-foreground flex items-center gap-2">
             <Calendar className="h-5 w-5" />
@@ -89,7 +90,7 @@ export const MealHistory = ({ meals }: MealHistoryProps) => {
   }
 
   return (
-    <Card className="bg-card/50 backdrop-blur-sm border-primary/10">
+    <Card className={`bg-card/50 backdrop-blur-sm border-primary/10 transition-all duration-500 ${isUpdating ? 'animate-pulse ring-2 ring-primary/50' : ''}`}>
       <CardHeader>
         <CardTitle className="text-foreground flex items-center gap-2">
           <Calendar className="h-5 w-5" />

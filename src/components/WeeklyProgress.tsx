@@ -14,9 +14,10 @@ interface Meal {
 
 interface WeeklyProgressProps {
   meals: Meal[];
+  isUpdating?: boolean;
 }
 
-export const WeeklyProgress = ({ meals }: WeeklyProgressProps) => {
+export const WeeklyProgress = ({ meals, isUpdating = false }: WeeklyProgressProps) => {
   const [activeTab, setActiveTab] = useState("calories");
 
   // Generate data for the past 7 days
@@ -94,7 +95,7 @@ export const WeeklyProgress = ({ meals }: WeeklyProgressProps) => {
   );
 
   return (
-    <Card className="bg-card/50 backdrop-blur-sm border-primary/10">
+    <Card className={`bg-card/50 backdrop-blur-sm border-primary/10 transition-all duration-500 ${isUpdating ? 'animate-pulse ring-2 ring-primary/50' : ''}`}>
       <CardHeader>
         <CardTitle className="text-foreground">Weekly Progress</CardTitle>
       </CardHeader>
