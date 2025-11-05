@@ -322,11 +322,19 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Logo size="sm" />
           <div className="flex gap-2">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/profile-setup")}>
-              <Edit className="h-5 w-5" />
+            <Button 
+              className="bg-primary text-primary-foreground hover:bg-primary/90" 
+              onClick={() => navigate("/profile-setup")}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Profile
             </Button>
-            <Button variant="ghost" size="icon" onClick={signOut}>
-              <LogOut className="h-5 w-5" />
+            <Button 
+              className="bg-primary text-primary-foreground hover:bg-primary/90" 
+              onClick={signOut}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
             </Button>
           </div>
         </div>
