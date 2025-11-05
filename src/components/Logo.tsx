@@ -1,4 +1,4 @@
-import logo from "@/assets/nutrilens-logo.png";
+import logo from "@/assets/nutrilens-logo.jpg";
 
 interface LogoProps {
   size?: "sm" | "md" | "lg";
