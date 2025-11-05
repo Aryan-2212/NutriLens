@@ -83,6 +83,28 @@ const Dashboard = () => {
     }
 
     loadData();
+
+    // Set up real-time subscription for meals
+    const channel = supabase
+      .channel('meals-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'meals',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Meal change detected:', payload);
+          loadData(); // Refresh data on any change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user, navigate]);
 
   const loadData = async () => {
