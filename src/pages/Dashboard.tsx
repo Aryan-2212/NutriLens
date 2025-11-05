@@ -37,6 +37,7 @@ interface Profile {
   age?: number;
   gender?: string;
   activity_level?: string;
+  username?: string;
 }
 
 interface Meal {
@@ -273,6 +274,16 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 space-y-8">
+        {/* Welcome Message */}
+        {profile?.username && (
+          <div className="text-center">
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Hello {profile.username}, Welcome Back! 👋
+            </h1>
+            <p className="text-muted-foreground mt-2">Let's track your nutrition journey today</p>
+          </div>
+        )}
+
         {/* Today's Summary */}
         <Card className="shadow-strong">
           <CardHeader>

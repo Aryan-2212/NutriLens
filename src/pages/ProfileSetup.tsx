@@ -17,6 +17,7 @@ const ProfileSetup = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
+    username: "",
     height: "",
     weight: "",
     age: "",
@@ -42,6 +43,7 @@ const ProfileSetup = () => {
         setIsEditing(true);
         setProfileId(data.id);
         setFormData({
+          username: data.username || "",
           height: data.height?.toString() || "",
           weight: data.weight?.toString() || "",
           age: data.age?.toString() || "",
@@ -95,6 +97,7 @@ const ProfileSetup = () => {
         const { error } = await supabase
           .from("profiles")
           .update({
+            username: formData.username,
             height: parseFloat(formData.height),
             weight: parseFloat(formData.weight),
             age: parseInt(formData.age),
@@ -110,6 +113,7 @@ const ProfileSetup = () => {
         // Create new profile
         const { error } = await supabase.from("profiles").insert({
           user_id: user.id,
+          username: formData.username,
           height: parseFloat(formData.height),
           weight: parseFloat(formData.weight),
           age: parseInt(formData.age),
@@ -148,6 +152,20 @@ const ProfileSetup = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="johndoe"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                required
+                minLength={3}
+                maxLength={30}
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="height">Height (cm)</Label>
