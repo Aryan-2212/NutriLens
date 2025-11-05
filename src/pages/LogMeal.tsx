@@ -95,6 +95,27 @@ const LogMeal = () => {
     setLoading(true);
 
     try {
+      let imageUrl: string | null = null;
+
+      // Upload image to storage if present
+      if (image) {
+        const fileExt = image.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('meal-images')
+          .upload(fileName, image);
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('meal-images')
+          .getPublicUrl(fileName);
+        
+        imageUrl = publicUrl;
+      }
+
       const { error } = await supabase.from("meals").insert({
         user_id: user.id,
         name: formData.name,
@@ -105,6 +126,7 @@ const LogMeal = () => {
         fiber: parseFloat(formData.fiber) || 0,
         meal_type: formData.meal_type,
         logged_at: new Date().toISOString(),
+        image_url: imageUrl,
       });
 
       if (error) throw error;
