@@ -19,9 +19,13 @@ export const NutritionRing = ({ value, max, label, color, size = "md" }: Nutriti
     sm: 6,
     md: 8,
     lg: 10,
-  };
+  } as const;
 
-  const radius = size === "sm" ? 34 : size === "md" ? 50 : 66;
+  const VIEWBOX_SIZE = 120;
+  const center = VIEWBOX_SIZE / 2;
+  const strokeW = strokeWidthClasses[size];
+  const padding = 6; // prevent stroke from clipping
+  const radius = center - strokeW / 2 - padding;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
