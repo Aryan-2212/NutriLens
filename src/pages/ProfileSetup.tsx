@@ -14,6 +14,8 @@ const ProfileSetup = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     height: "",
     weight: "",
@@ -28,8 +30,8 @@ const ProfileSetup = () => {
       return;
     }
 
-    // Check if profile already exists
-    const checkProfile = async () => {
+    // Load existing profile if it exists
+    const loadProfile = async () => {
       const { data } = await supabase
         .from("profiles")
         .select("*")
@@ -37,11 +39,19 @@ const ProfileSetup = () => {
         .single();
 
       if (data) {
-        navigate("/");
+        setIsEditing(true);
+        setProfileId(data.id);
+        setFormData({
+          height: data.height?.toString() || "",
+          weight: data.weight?.toString() || "",
+          age: data.age?.toString() || "",
+          gender: data.gender || "",
+          activity_level: data.activity_level || "",
+        });
       }
     };
 
-    checkProfile();
+    loadProfile();
   }, [user, navigate]);
 
   const calculateDailyCalories = () => {
@@ -80,22 +90,41 @@ const ProfileSetup = () => {
     try {
       const dailyCalories = calculateDailyCalories();
 
-      const { error } = await supabase.from("profiles").insert({
-        user_id: user.id,
-        height: parseFloat(formData.height),
-        weight: parseFloat(formData.weight),
-        age: parseInt(formData.age),
-        gender: formData.gender,
-        activity_level: formData.activity_level,
-        daily_calorie_goal: dailyCalories,
-      });
+      if (isEditing) {
+        // Update existing profile
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            height: parseFloat(formData.height),
+            weight: parseFloat(formData.weight),
+            age: parseInt(formData.age),
+            gender: formData.gender,
+            activity_level: formData.activity_level,
+            daily_calorie_goal: dailyCalories,
+          })
+          .eq("user_id", user.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success("Profile updated successfully!");
+      } else {
+        // Create new profile
+        const { error } = await supabase.from("profiles").insert({
+          user_id: user.id,
+          height: parseFloat(formData.height),
+          weight: parseFloat(formData.weight),
+          age: parseInt(formData.age),
+          gender: formData.gender,
+          activity_level: formData.activity_level,
+          daily_calorie_goal: dailyCalories,
+        });
 
-      toast.success("Profile created successfully!");
+        if (error) throw error;
+        toast.success("Profile created successfully!");
+      }
+
       navigate("/");
     } catch (error: any) {
-      toast.error(error.message || "Failed to create profile");
+      toast.error(error.message || "Failed to save profile");
     } finally {
       setLoading(false);
     }
@@ -109,7 +138,9 @@ const ProfileSetup = () => {
             <Logo size="md" />
           </div>
           <div>
-            <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
+            <CardTitle className="text-2xl">
+              {isEditing ? "Edit Your Profile" : "Complete Your Profile"}
+            </CardTitle>
             <CardDescription>
               Help us personalize your nutrition tracking experience
             </CardDescription>
@@ -202,7 +233,7 @@ const ProfileSetup = () => {
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating Profile..." : "Complete Setup"}
+              {loading ? "Saving Profile..." : isEditing ? "Update Profile" : "Complete Setup"}
             </Button>
           </form>
         </CardContent>

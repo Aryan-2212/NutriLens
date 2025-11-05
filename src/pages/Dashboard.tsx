@@ -243,26 +243,6 @@ const Dashboard = () => {
 
         {/* Protein Recommendations */}
         <ProteinRecommendations weight={profile?.weight} />
-
-        {/* Recommendations */}
-        {profile && totals.calories < profile.daily_calorie_goal * 0.7 && (
-          <Card className="shadow-strong border-secondary">
-            <CardHeader>
-              <CardTitle>💡 Recommendations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm">
-                <li>• You're below your calorie goal. Consider adding a healthy snack.</li>
-                {totals.protein < recommendedProtein * 0.7 && (
-                  <li>• Try to include more protein-rich foods like dal, paneer, or eggs.</li>
-                )}
-                {totals.fiber < 25 && (
-                  <li>• Add more fiber with whole grains, fruits, and vegetables.</li>
-                )}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
       </main>
     </div>
   );
