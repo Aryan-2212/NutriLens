@@ -2,12 +2,7 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Info } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface ServingSizeAdjusterProps {
   servingSize: number;
@@ -36,6 +31,13 @@ export const ServingSizeAdjuster = ({
     return "outline";
   };
 
+  const MIN = 0.25;
+  const MAX = 3;
+  const STEP = 0.25;
+  const ticks = [MIN, 1, MAX];
+  const getPercent = (v: number) => ((v - MIN) / (MAX - MIN)) * 100;
+  const formatTick = (v: number) => (v === 0.25 ? "0.25x" : v === 1 ? "1.0x" : v === 3 ? "3.0x" : `${v}x`);
+
   return (
     <div className="space-y-4 p-4 rounded-lg bg-muted/50 border border-border">
       <div className="flex items-start justify-between gap-2">
@@ -54,25 +56,23 @@ export const ServingSizeAdjuster = ({
             </div>
           )}
         </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button 
-                type="button" 
-                className="cursor-pointer hover:text-foreground transition-colors"
-                aria-label="Serving size information"
-              >
-                <Info className="h-4 w-4 text-muted-foreground mt-1" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs">
-              <p className="text-sm">
-                Adjust the slider to match your actual portion size. The AI provides an initial estimate, 
-                but you can fine-tune it. All nutritional values will automatically recalculate based on your adjustment.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="cursor-pointer hover:text-foreground transition-colors"
+              aria-label="Serving size information"
+            >
+              <Info className="h-4 w-4 text-muted-foreground mt-1" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="max-w-xs">
+            <p className="text-sm">
+              Adjust the slider to match your actual portion size. The AI provides an initial estimate,
+              but you can fine-tune it. All nutritional values will automatically recalculate based on your adjustment.
+            </p>
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="space-y-3">
@@ -84,16 +84,22 @@ export const ServingSizeAdjuster = ({
         <Slider
           value={[servingSize]}
           onValueChange={(values) => onServingSizeChange(values[0])}
-          min={0.25}
-          max={3}
-          step={0.25}
+          min={MIN}
+          max={MAX}
+          step={STEP}
           className="w-full"
         />
         
-        <div className="flex justify-between text-xs text-muted-foreground px-1">
-          <span>¼x</span>
-          <span>1.5x</span>
-          <span>3x</span>
+        <div className="relative h-5 mt-1">
+          {ticks.map((t) => (
+            <span
+              key={t}
+              className="absolute -translate-x-1/2 text-xs text-muted-foreground"
+              style={{ left: `${getPercent(t)}%` }}
+            >
+              {formatTick(t)}
+            </span>
+          ))}
         </div>
       </div>
 
