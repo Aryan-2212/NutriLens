@@ -2,6 +2,12 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ServingSizeAdjusterProps {
   servingSize: number;
@@ -48,7 +54,25 @@ export const ServingSizeAdjuster = ({
             </div>
           )}
         </div>
-        <Info className="h-4 w-4 text-muted-foreground mt-1" />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button 
+                type="button" 
+                className="cursor-pointer hover:text-foreground transition-colors"
+                aria-label="Serving size information"
+              >
+                <Info className="h-4 w-4 text-muted-foreground mt-1" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p className="text-sm">
+                Adjust the slider to match your actual portion size. The AI provides an initial estimate, 
+                but you can fine-tune it. All nutritional values will automatically recalculate based on your adjustment.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <div className="space-y-3">
@@ -66,10 +90,10 @@ export const ServingSizeAdjuster = ({
           className="w-full"
         />
         
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>0.25x</span>
-          <span>1.0x</span>
-          <span>3.0x</span>
+        <div className="flex justify-between text-xs text-muted-foreground px-1">
+          <span>¼x</span>
+          <span>1.5x</span>
+          <span>3x</span>
         </div>
       </div>
 
