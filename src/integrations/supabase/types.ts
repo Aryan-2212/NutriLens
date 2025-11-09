@@ -19,6 +19,7 @@ export type Database = {
           calories: number
           carbs: number | null
           created_at: string
+          estimated_serving: string | null
           fat: number | null
           fiber: number | null
           id: string
@@ -27,12 +28,15 @@ export type Database = {
           meal_type: string | null
           name: string
           protein: number | null
+          serving_size: number | null
+          serving_unit: string | null
           user_id: string
         }
         Insert: {
           calories?: number
           carbs?: number | null
           created_at?: string
+          estimated_serving?: string | null
           fat?: number | null
           fiber?: number | null
           id?: string
@@ -41,12 +45,15 @@ export type Database = {
           meal_type?: string | null
           name: string
           protein?: number | null
+          serving_size?: number | null
+          serving_unit?: string | null
           user_id: string
         }
         Update: {
           calories?: number
           carbs?: number | null
           created_at?: string
+          estimated_serving?: string | null
           fat?: number | null
           fiber?: number | null
           id?: string
@@ -55,6 +62,8 @@ export type Database = {
           meal_type?: string | null
           name?: string
           protein?: number | null
+          serving_size?: number | null
+          serving_unit?: string | null
           user_id?: string
         }
         Relationships: []

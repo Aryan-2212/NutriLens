@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { ArrowLeft, Camera, Upload } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { ServingSizeAdjuster } from "@/components/ServingSizeAdjuster";
 
 const LogMeal = () => {
   const { user } = useAuth();
@@ -31,6 +32,19 @@ const LogMeal = () => {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [analyzing, setAnalyzing] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Serving size state
+  const [servingSize, setServingSize] = useState(1.0);
+  const [baseNutrition, setBaseNutrition] = useState({
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    fiber: 0,
+  });
+  const [estimatedServing, setEstimatedServing] = useState<string>("");
+  const [servingUnit, setServingUnit] = useState<string>("");
+  const [confidence, setConfidence] = useState<string>("");
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,24 +81,62 @@ const LogMeal = () => {
           return;
         }
 
-        // Update form with AI results
+        // Store base nutrition values
+        const baseCalories = data.calories || 0;
+        const baseProtein = data.protein || 0;
+        const baseCarbs = data.carbs || 0;
+        const baseFat = data.fat || 0;
+        const baseFiber = data.fiber || 0;
+
+        setBaseNutrition({
+          calories: baseCalories,
+          protein: baseProtein,
+          carbs: baseCarbs,
+          fat: baseFat,
+          fiber: baseFiber,
+        });
+
+        // Store serving size info
+        const aiServingSize = data.serving_size || 1.0;
+        setServingSize(aiServingSize);
+        setEstimatedServing(data.estimated_serving || `${aiServingSize} ${data.serving_unit || "servings"}`);
+        setServingUnit(data.serving_unit || "servings");
+        setConfidence(data.confidence || "medium");
+
+        // Update form with AI results (already adjusted by AI's serving size estimate)
         setFormData({
           name: data.name || "",
-          calories: data.calories?.toString() || "",
-          protein: data.protein?.toString() || "",
-          carbs: data.carbs?.toString() || "",
-          fat: data.fat?.toString() || "",
-          fiber: data.fiber?.toString() || "",
+          calories: baseCalories.toString(),
+          protein: baseProtein.toString(),
+          carbs: baseCarbs.toString(),
+          fat: baseFat.toString(),
+          fiber: baseFiber.toString(),
           meal_type: formData.meal_type,
         });
 
-        toast.success("Image analyzed successfully! Review and adjust the values.");
+        toast.success("Image analyzed successfully! Adjust serving size if needed.");
       };
     } catch (error: any) {
       toast.error(error.message || "Failed to analyze image");
     } finally {
       setAnalyzing(false);
     }
+  };
+
+  const handleServingSizeChange = (newSize: number) => {
+    setServingSize(newSize);
+    
+    // Recalculate nutrition values based on new serving size
+    const ratio = newSize / 1.0; // Adjust from base (1.0x)
+    
+    setFormData(prev => ({
+      ...prev,
+      calories: (baseNutrition.calories * ratio).toFixed(1),
+      protein: (baseNutrition.protein * ratio).toFixed(1),
+      carbs: (baseNutrition.carbs * ratio).toFixed(1),
+      fat: (baseNutrition.fat * ratio).toFixed(1),
+      fiber: (baseNutrition.fiber * ratio).toFixed(1),
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -127,6 +179,9 @@ const LogMeal = () => {
         meal_type: formData.meal_type,
         logged_at: new Date().toISOString(),
         image_url: imageUrl,
+        serving_size: servingSize,
+        estimated_serving: estimatedServing,
+        serving_unit: servingUnit,
       });
 
       if (error) throw error;
@@ -218,6 +273,16 @@ const LogMeal = () => {
                       className="hidden"
                     />
                   </div>
+                  
+                  {/* Serving Size Adjuster - show after analysis */}
+                  {estimatedServing && (
+                    <ServingSizeAdjuster
+                      servingSize={servingSize}
+                      onServingSizeChange={handleServingSizeChange}
+                      estimatedServing={estimatedServing}
+                      confidence={confidence}
+                    />
+                  )}
                 </div>
               )}
 

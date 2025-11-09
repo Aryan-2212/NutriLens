@@ -33,6 +33,8 @@ serve(async (req) => {
             role: "system",
             content: `You are a nutrition expert specialized in Indian cuisine. Analyze food images and provide accurate nutritional information. 
             
+Estimate the serving size based on visual cues like plate size, bowl fullness, utensil scale, and food density.
+
 Return your response as a JSON object with these fields:
 - name: the name of the dish
 - calories: total calories (number)
@@ -40,8 +42,11 @@ Return your response as a JSON object with these fields:
 - carbs: grams of carbohydrates (number)
 - fat: grams of fat (number)
 - fiber: grams of fiber (number)
+- serving_size: estimated portion size as a number (e.g., 1.0 for standard, 1.5 for one and half portions)
+- serving_unit: unit of measurement (e.g., "cups", "plates", "bowls", "servings")
+- confidence: estimation confidence level - "high", "medium", or "low"
 
-Be as accurate as possible based on typical serving sizes for Indian meals. Return ONLY the JSON object, no other text.`,
+Be as accurate as possible. Return ONLY the JSON object, no other text.`,
           },
           {
             role: "user",
