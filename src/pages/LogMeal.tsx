@@ -144,6 +144,12 @@ const LogMeal = () => {
 
     if (!user) return;
 
+    // Validate meal type is selected
+    if (!formData.meal_type) {
+      toast.error("Please select a meal type");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -299,7 +305,9 @@ const LogMeal = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="meal_type">Meal Type</Label>
+                <Label htmlFor="meal_type">
+                  Meal Type <span className="text-destructive">*</span>
+                </Label>
                 <Select
                   value={formData.meal_type}
                   onValueChange={(value) => setFormData({ ...formData, meal_type: value })}
