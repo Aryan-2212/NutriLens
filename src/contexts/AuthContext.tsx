@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string, username: string) => {
     const redirectUrl = `${window.location.origin}/profile-setup`;
     
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -54,16 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    // Create profile with username after signup
-    if (data.user && !error) {
-      setTimeout(async () => {
-        await supabase.from("profiles").insert({
-          user_id: data.user.id,
-          username: username
-        });
-      }, 0);
-    }
-
+    // Profile is automatically created by database trigger
     return { error };
   };
 
